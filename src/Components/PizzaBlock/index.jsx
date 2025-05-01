@@ -1,4 +1,5 @@
 import React from "react"
+import code from "../../assets/img/code.png"
 
 function PizzaBlock({ name, price, imageUrl, sizes, types }) {
 
@@ -12,7 +13,7 @@ function PizzaBlock({ name, price, imageUrl, sizes, types }) {
             <div className="pizza-block">
                 <img
                     className="pizza-block__image"
-                    src={imageUrl}
+                    src={code} // imageUrl
                     alt="Pizza"
                 />
                 <h4 className="pizza-block__title">{name}</h4>
