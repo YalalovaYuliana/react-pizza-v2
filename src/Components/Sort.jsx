@@ -1,15 +1,21 @@
 import React from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { setSortType } from '../redux/slices/filterSlice'
 
-function Sort({ value, onClickSortType }) {
 
-    const sortTypes = [
-        { name: 'популярности', sortProperty: 'rating' },
-        { name: 'цене', sortProperty: 'price' },
-        { name: 'алфавиту', sortProperty: 'name' }]
+const sortTypes = [
+    { name: 'популярности', sortProperty: 'rating' },
+    { name: 'цене', sortProperty: 'price' },
+    { name: 'алфавиту', sortProperty: 'name' }]
+
+function Sort() {
+    const sortType = useSelector(state => state.filter.sortType)
+    const dispatch = useDispatch()
+
     const [isOpen, setIsOpen] = React.useState(false)
 
     const onSelectType = (type) => {
-        onClickSortType(type)
+        dispatch(setSortType(type))
         setIsOpen(false)
     }
 
@@ -29,7 +35,7 @@ function Sort({ value, onClickSortType }) {
                     />
                 </svg>
                 <b>Сортировка по:</b>
-                <span onClick={() => setIsOpen(!isOpen)}>{value.name}</span>
+                <span onClick={() => setIsOpen(!isOpen)}>{sortType.name}</span>
             </div>
             {
                 isOpen && (
@@ -37,7 +43,7 @@ function Sort({ value, onClickSortType }) {
                         <ul>
                             {
                                 sortTypes.map((type, index) => (
-                                    <li key={index} onClick={() => onSelectType(type)} className={value === type ? 'active' : ''}>{type.name}</li>
+                                    <li key={index} onClick={() => onSelectType(type)} className={sortType === type ? 'active' : ''}>{type.name}</li>
                                 ))
                             }
                         </ul>
