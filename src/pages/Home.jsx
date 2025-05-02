@@ -1,5 +1,4 @@
 import React from 'react'
-import axios from 'axios'
 import qs from 'qs'
 import { useNavigate } from 'react-router-dom'
 import Categories from '../Components/Categories'
@@ -10,6 +9,7 @@ import Pagination from '../Components/Pagination'
 import { SearchContext } from '../App'
 import { useSelector, useDispatch } from 'react-redux'
 import { setCategoryId, setCurrentPage, setFilters } from '../redux/slices/filterSlice'
+import { fetchPizzas } from '../redux/slices/pizzasSlice'
 
 const Home = () => {
     const navigate = useNavigate()
@@ -17,26 +17,31 @@ const Home = () => {
     const isMounted = React.useRef(false)
 
     const { categoryId, sortType, currentPage } = useSelector(state => state.filter)
+    const items = useSelector(state => state.pizza.items)
     const dispatch = useDispatch()
 
     const { searchValue } = React.useContext(SearchContext)
-    const [items, setItems] = React.useState([])
     const [isLoading, setIsLoading] = React.useState(true)
 
-    const fetchPizzas = () => {
+    const getPizzas = async () => {
         setIsLoading(true)
 
         const category = categoryId > 0 ? `category=${categoryId}` : ''
         const sortBy = sortType.sortProperty
         const search = searchValue ? `&search=${searchValue}` : ''
 
-        axios.get(
-            `https://68126593129f6313e20e746e.mockapi.io/items?page=${currentPage}&limit=4&${category}&sortBy=${sortBy}&order=decs${search}`
-        )
-            .then(response => {
-                setItems(response.data)
-                setIsLoading(false)
-            })
+        try {
+            dispatch(fetchPizzas({
+                category,
+                sortBy,
+                search,
+                currentPage,
+            }))
+        } catch (error) {
+        } finally {
+            setIsLoading(false)
+        }
+
     }
 
     React.useEffect(() => {
@@ -69,7 +74,7 @@ const Home = () => {
         window.scrollTo(0, 0)
 
         if (!isSearch.current) {
-            fetchPizzas()
+            getPizzas()
         }
 
         isSearch.current = false
