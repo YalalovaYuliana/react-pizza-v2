@@ -1,4 +1,5 @@
 import React from 'react'
+import axios from 'axios'
 import Categories from '../Components/Categories'
 import Sort from '../Components/Sort'
 import PizzaBlock from '../Components/PizzaBlock'
@@ -6,16 +7,15 @@ import Skeleton from '../Components/PizzaBlock/Skeleton'
 import Pagination from '../Components/Pagination'
 import { SearchContext } from '../App'
 import { useSelector, useDispatch } from 'react-redux'
-import { setCategoryId } from '../redux/slices/filterSlice'
+import { setCategoryId, setCurrentPage } from '../redux/slices/filterSlice'
 
 const Home = () => {
-    const { categoryId, sortType } = useSelector(state => state.filter)
+    const { categoryId, sortType, currentPage } = useSelector(state => state.filter)
     const dispatch = useDispatch()
 
     const { searchValue } = React.useContext(SearchContext)
     const [items, setItems] = React.useState([])
     const [isLoading, setIsLoading] = React.useState(true)
-    const [currentPage, setCurrentPage] = React.useState(1);
 
     React.useEffect(() => {
         setIsLoading(true)
@@ -24,12 +24,14 @@ const Home = () => {
         const sortBy = sortType.sortProperty
         const search = searchValue ? `&search=${searchValue}` : ''
 
-        fetch(`https://68126593129f6313e20e746e.mockapi.io/items?page=${currentPage}&limit=4&${category}&sortBy=${sortBy}&order=decs${search}`) // &${searchValue ? `name=${searchValue}` : ''}
-            .then(response => response.json())
-            .then((json) => {
-                setItems(json)
+        axios.get(
+            `https://68126593129f6313e20e746e.mockapi.io/items?page=${currentPage}&limit=4&${category}&sortBy=${sortBy}&order=decs${search}`
+        )
+            .then(response => {
+                setItems(response.data)
                 setIsLoading(false)
             })
+
         window.scrollTo(0, 0)
     }, [categoryId, sortType, searchValue, currentPage])
 
@@ -48,7 +50,7 @@ const Home = () => {
                     isLoading ? skeletons : pizzas
                 }
             </div>
-            <Pagination setCurrentPage={setCurrentPage} />
+            <Pagination currentPage={currentPage} setCurrentPage={(number) => dispatch(setCurrentPage(number))} />
         </div>
     )
 }
