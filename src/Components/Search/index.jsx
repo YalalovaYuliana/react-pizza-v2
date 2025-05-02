@@ -12,7 +12,7 @@ const Search = () => {
         debounce((str) => {
             setSearchValue(str)
         }, 250),
-        [],
+        []
     )
 
     const onChangeInput = event => {

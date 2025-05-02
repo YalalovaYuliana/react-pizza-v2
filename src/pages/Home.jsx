@@ -1,15 +1,21 @@
 import React from 'react'
 import axios from 'axios'
+import qs from 'qs'
+import { useNavigate } from 'react-router-dom'
 import Categories from '../Components/Categories'
-import Sort from '../Components/Sort'
+import Sort, { sortTypes } from '../Components/Sort'
 import PizzaBlock from '../Components/PizzaBlock'
 import Skeleton from '../Components/PizzaBlock/Skeleton'
 import Pagination from '../Components/Pagination'
 import { SearchContext } from '../App'
 import { useSelector, useDispatch } from 'react-redux'
-import { setCategoryId, setCurrentPage } from '../redux/slices/filterSlice'
+import { setCategoryId, setCurrentPage, setFilters } from '../redux/slices/filterSlice'
 
 const Home = () => {
+    const navigate = useNavigate()
+    const isSearch = React.useRef(false)
+    const isMounted = React.useRef(false)
+
     const { categoryId, sortType, currentPage } = useSelector(state => state.filter)
     const dispatch = useDispatch()
 
@@ -17,7 +23,7 @@ const Home = () => {
     const [items, setItems] = React.useState([])
     const [isLoading, setIsLoading] = React.useState(true)
 
-    React.useEffect(() => {
+    const fetchPizzas = () => {
         setIsLoading(true)
 
         const category = categoryId > 0 ? `category=${categoryId}` : ''
@@ -31,8 +37,42 @@ const Home = () => {
                 setItems(response.data)
                 setIsLoading(false)
             })
+    }
 
+    React.useEffect(() => {
+        if (isMounted.current) {
+            const queryString = qs.stringify({
+                sortProperty: sortType.sortProperty,
+                categoryId: categoryId,
+                currentPage: currentPage,
+            })
+            navigate(`?${queryString}`)
+        }
+        isMounted.current = true
+    }, [categoryId, sortType.sortProperty, currentPage, navigate])
+
+    React.useEffect(() => {
+        if (window.location.search) {
+            const params = qs.parse(window.location.search.substring(1))
+
+            const sort = sortTypes.find(sortObj => sortObj.sortProperty === params.sortProperty)
+
+            dispatch(setFilters({
+                ...params,
+                sort
+            }))
+            isSearch.current = true
+        }
+    }, [])
+
+    React.useEffect(() => {
         window.scrollTo(0, 0)
+
+        if (!isSearch.current) {
+            fetchPizzas()
+        }
+
+        isSearch.current = false
     }, [categoryId, sortType, searchValue, currentPage])
 
     const pizzas = items.map((pizzaObj) => (<PizzaBlock key={pizzaObj.id} {...pizzaObj} />)) // .filter(pizzaObj => pizzaObj.name.toLowerCase().includes(searchValue.toLowerCase()))
